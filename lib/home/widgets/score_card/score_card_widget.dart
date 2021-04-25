@@ -1,10 +1,16 @@
+import 'package:flutter/material.dart';
+
 import 'package:devquiz/core/core.dart';
 import 'package:devquiz/home/widgets/chart/chart_widget.dart';
-import 'package:flutter/material.dart';
 
 class ScoreCardWidget extends StatelessWidget {
   final int score;
-  const ScoreCardWidget({Key? key, required this.score}) : super(key: key);
+  final double percent;
+  const ScoreCardWidget({
+    Key? key,
+    required this.score,
+    required this.percent,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +29,10 @@ class ScoreCardWidget extends StatelessWidget {
             children: [
               Expanded(
                 flex: 1,
-                child: ChartWidget(score: score,),
+                child: ChartWidget(
+                  score: score,
+                  percent: percent,
+                ),
               ),
               Expanded(
                 flex: 3,

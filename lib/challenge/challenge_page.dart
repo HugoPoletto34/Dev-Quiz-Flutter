@@ -2,12 +2,15 @@ import 'package:devquiz/challenge/challenge_controller/challenge_controller.dart
 import 'package:devquiz/challenge/quiz/quiz_widget.dart';
 import 'package:devquiz/challenge/widgets/next_button/next_button_widget.dart';
 import 'package:devquiz/challenge/widgets/question_indicador/question_indicator_widget.dart';
+import 'package:devquiz/result/result_page.dart';
 import 'package:devquiz/shared/models/question_model.dart';
 import 'package:flutter/material.dart';
 
 class ChallengePage extends StatefulWidget {
   final List<QuestionModel> questions;
-  ChallengePage({Key? key, required this.questions}) : super(key: key);
+  final String title;
+  ChallengePage({Key? key, required this.questions, required this.title})
+      : super(key: key);
 
   @override
   _ChallengePageState createState() => _ChallengePageState();
@@ -30,6 +33,13 @@ class _ChallengePageState extends State<ChallengePage> {
         duration: Duration(milliseconds: 100),
         curve: Curves.linear,
       );
+  }
+
+  void onSelected(bool value) {
+    if (value) {
+      controller.qtdeAnswerRight++;
+    }
+    nextQuestion();
   }
 
   @override
@@ -65,7 +75,7 @@ class _ChallengePageState extends State<ChallengePage> {
             .map(
               (e) => QuizWidget(
                 question: e,
-                onChange: nextQuestion,
+                onSelected: onSelected,
               ),
             )
             .toList(),
@@ -94,7 +104,15 @@ class _ChallengePageState extends State<ChallengePage> {
                                 child: NextButtonWidget.green(
                               label: "Enviar",
                               onTap: () {
-                                Navigator.pop(context);
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ResultPage(
+                                              result:
+                                                  controller.qtdeAnswerRight,
+                                              title: widget.title,
+                                              length: widget.questions.length,
+                                            )));
                               },
                             ))
                         ]))),

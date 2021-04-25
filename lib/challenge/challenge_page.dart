@@ -1,27 +1,103 @@
+import 'package:devquiz/challenge/challenge_controller/challenge_controller.dart';
 import 'package:devquiz/challenge/quiz/quiz_widget.dart';
+import 'package:devquiz/challenge/widgets/next_button/next_button_widget.dart';
 import 'package:devquiz/challenge/widgets/question_indicador/question_indicator_widget.dart';
+import 'package:devquiz/shared/models/question_model.dart';
 import 'package:flutter/material.dart';
 
 class ChallengePage extends StatefulWidget {
-  ChallengePage({Key? key}) : super(key: key);
+  final List<QuestionModel> questions;
+  ChallengePage({Key? key, required this.questions}) : super(key: key);
 
   @override
   _ChallengePageState createState() => _ChallengePageState();
 }
 
 class _ChallengePageState extends State<ChallengePage> {
+  final controller = ChallengeController();
+  final pageController = PageController();
+  @override
+  void initState() {
+    pageController.addListener(() {
+      controller.currentPage = pageController.page!.toInt() + 1;
+    });
+    super.initState();
+  }
+
+  void nextQuestion() {
+    if (controller.currentPage < widget.questions.length)
+      pageController.nextPage(
+        duration: Duration(milliseconds: 100),
+        curve: Curves.linear,
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
+        preferredSize: Size.fromHeight(102),
         child: SafeArea(
-          child: QuestionIndicadorWidget(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: () => {
+                        Navigator.pop(context),
+                      }),
+              ValueListenableBuilder<int>(
+                valueListenable: controller.currentPageNotifier,
+                builder: (context, value, _) => QuestionIndicadorWidget(
+                  currentPage: controller.currentPage,
+                  length: widget.questions.length,
+                ),
+              )
+            ],
+          ),
           top: true,
         ),
       ),
-      body: QuizWidget(
-        title: 'O que o Flutter fez em sua totalidade?',
+      body: PageView(
+        physics: NeverScrollableScrollPhysics(),
+        controller: pageController,
+        children: widget.questions
+            .map(
+              (e) => QuizWidget(
+                question: e,
+                onChange: nextQuestion,
+              ),
+            )
+            .toList(),
+      ),
+      bottomNavigationBar: SafeArea(
+        bottom: true,
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: ValueListenableBuilder<int>(
+                valueListenable: controller.currentPageNotifier,
+                builder: (context, value, _) => Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          if (value < widget.questions.length)
+                            Expanded(
+                                child: NextButtonWidget.white(
+                              label: "Pular",
+                              onTap: nextQuestion,
+                            )),
+                          if (value == widget.questions.length)
+                            SizedBox(
+                              width: 7,
+                            ),
+                          if (value == widget.questions.length)
+                            Expanded(
+                                child: NextButtonWidget.green(
+                              label: "Enviar",
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                            ))
+                        ]))),
       ),
     );
   }
